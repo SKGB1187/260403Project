@@ -41,7 +41,6 @@ class User(db.Model):
 
         Hashes password and adds user to system.
         """
-
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = cls(
@@ -63,13 +62,10 @@ class User(db.Model):
 
         If can't find matching user (or if password is wrong), returns False.
         """
-
         user = cls.query.filter_by(username=username).first()
 
-        if user:
-            is_auth = bcrypt.check_password_hash(user.password, password)
-            if is_auth:
-                return user
+        if user and bcrypt.check_password_hash(user.password, password):
+            return user
 
         return False
 

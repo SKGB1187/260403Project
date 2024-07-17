@@ -1,6 +1,45 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<div class="row text-center bg-dark text-success">
 
+    <div class="col-md-12 p-lg-5 mx-auto my-5">
+        <h1 class="display-4 fw-normal">Welcome {{ g.user.username }}</h1>
+        <p class="lead fw-normal text-white">Let's get listening to your customized beat!</p>
+    </div>
+
+</div>
+
+<div class="row text-center bg-success text-success">
+
+    <div class="col-md-12 p-lg-5 mx-auto my-1"></div>
+
+</div>
+
+<div class="row justify-content-center">
+    <div class="m-3 col-lg-3 bg-dark d-flex flex-column justify-content-center align-items-center p-5">
+        <h2 class="text-center text-success">Profile</h2>
+        <p class="text-center text-white">Update your profile or change your Spotify authorization account.</p>
+        <p><a class="btn btn-success" href="/update_profile">Update/Change &raquo;</a></p>
+    </div>
+    
+    <div class="m-3 col-lg-3 d-flex flex-column justify-content-center align-items-center p-5 bg-dark">
+        <h2 class="text-center text-success">Review Playlists</h2>
+        <p class="text-center text-white">Look at the playlists you have already created and add, reorder, or delete songs.</p>
+        <p><a class="btn btn-success" href="/playlists">Review Playlists &raquo;</a></p>
+    </div>
+    
+    <div class="m-3 col-lg-3 bg-dark d-flex flex-column justify-content-center align-items-center p-5">
+        <h2 class="text-center text-success">Create New Playlist</h2>
+        <p class="text-center text-white">Create a new playlist for any occasion.</p>
+        <p><a class="btn btn-success" href="/create_playlist">Create Playlist &raquo;</a></p>
+    </div>
+</div>
+
+<div class="row text-center bg-success text-success">
+
+    <div class="col-md-12 p-lg-5 mx-auto my-1"></div>
+
+</div>
 
 {% endblock %}

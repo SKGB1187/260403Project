@@ -6,8 +6,8 @@
 
   <div class="row justify-content-md-center">
   <div class="col-md-7 col-lg-5">
-    <h2 class="join-message py-3 text-center text-success bg-dark">Join PlaySpotPlay</h2>
-    <form method="POST" id="signup-form">
+    <h2 class="join-message py-3 text-center text-success bg-dark">Login</h2>
+    <form method="POST" id="login-form">
         
       {{ form.hidden_tag() }}
 
@@ -19,8 +19,8 @@
         {{ field(placeholder=field.label.text, class="form-control") }}
     </div>
       {% endfor %}
-      <p class="text-danger">Please note: upon submitting this form you will be redirected to the Spotify authorization page. Authorization to access data on your Spotify account must be given in order for the application to work.</p>
-      <button type="submit" class="btn btn-dark text-success btn-lg">Sign me up!</button>
+
+      <button type="submit" class="btn btn-dark text-success btn-lg">Login!</button>
     </form>
   </div>
 </div>

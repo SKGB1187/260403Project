@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block body_class %}onboarding{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-md-center">
+    <div class="col-md-7 col-lg-5">
+        <h2 class="join-message py-3 text-center text-success bg-dark">Spotify User Profile</h2>
+        <ul>
+            <li>Spotify User ID: <span id="id">{{ profile.id }}</span></li>
+            <li>Spotify User Display Name: <span id="id">{{ profile.display_name }}</span></li>
+            <li>Email used for Spotify: <span id="email">{{ profile.email }}'</span></li>
+            <li>Spotify URI: <a id="uri" href="profile.external_urls.spotify">{{ profile.uri }}</a></li>
+        </ul>
+        <button class="btn btn-dark text-success btn-lg" href="/link_spotify">Re-authenticate with Spotify</button>
+    </div>
+</div>
+
+{% endblock %}

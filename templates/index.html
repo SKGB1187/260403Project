@@ -1,13 +1,49 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="home-hero">
-    <h1>Welcome to PlaySpotPlay!</h1>
-    <p>PlaySpotPlay is a Spotify integration application for creating customized playlists.</p>
-    <h4>New to PlaySpotPlay?</h4>
-    <p>Sign up now to create your own playlists</p>
-    <a href="/sign_up" class="btn btn-primary">Sign up</a>
-    <h4>Already a member?</h4>
-    <p>Log in now to update or create your playlists</p>
-    <a href="/login" class="btn btn-primary">Log in</a>
+  <div class="row text-center bg-dark text-success">
+
+    <div class="col-md-12 p-lg-5 mx-auto my-5">
+      <h1 class="display-4 fw-normal">Welcome to PlaySpotPlay!</h1>
+      <p class="lead fw-normal text-white">PlaySpotPlay is a Spotify integration application for creating customized playlists. By creating an account you will be redirected to spotify to grant permission to access your playlists. This will include create, read, update, and delete playlists throught this application.</p>
+    </div>
+
   </div>
+
+  <div class="row text-center bg-success text-success">
+
+    <div class="col-md-12 p-lg-5 mx-auto my-1"></div>
+
+  </div>
+
+  <div class="row text-center bg-dark text-success">
+
+    <div class="d-md-flex flex-md-equal w-100 my-md-5 ps-md-3 bottom-boxes">
+
+      <div class="bg-dark me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-success overflow-hidden bottom-box">
+        <div class="my-3 py-3">
+          <h2 class="display-5">New to PlaySpotPlay?</h2>
+          <p class="lead text-white">Sign up now to create your own playlists</p>
+          <a class="btn btn-outline-success" href="/sign_up">Sign up</a>
+        </div>
+      </div>
+
+      <div
+        class="bg-dark me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-success text-white overflow-hidden bottom-box">
+        <div class="my-3 p-3">
+          <h2 class="display-5">Already a member?</h2>
+          <p class="lead text-white">Log in now to update or create your playlists</p>
+          <a href="/login" class="btn btn-outline-success">Log in</a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="row text-center bg-success text-success">
+
+    <div class="col-md-12 p-lg-5 mx-auto my-1"></div>
+
+  </div>
+  
 {% endblock %}
