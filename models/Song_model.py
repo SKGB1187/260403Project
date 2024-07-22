@@ -5,30 +5,25 @@ class Song(db.Model):
 
     __tablename__ = 'songs'
 
-    id = db.Column(
-        db.Integer,
+    spotify_song_id = db.Column(
+        db.String(256),
         primary_key=True,
     )
 
-    title = db.Column(
-        db.String(80), 
+    song_title = db.Column(
+        db.String(256), 
         nullable=False
     )
     
-    artist = db.Column(
-        db.String(120), 
+    song_artist = db.Column(
+        db.String(256), 
         nullable=False
     )
 
-    album = db.Column(
-        db.String(120), 
+    song_album = db.Column(
+        db.String(256), 
         nullable=False
-    )
-
-    release_date = db.Column(
-        db.Date, 
-        nullable=True
     )
 
     def __repr__(self):
-        return f"<User #{self.id}: {self.title}, {self.artist}, {self.album}, {self.release_date}>"
+        return f"<User #{self.spotify_song_id}: {self.song_title}, {self.song_artist}, {self.song_album}>"

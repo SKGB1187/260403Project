@@ -7,13 +7,26 @@
 <div class="row justify-content-md-center">
     <div class="col-md-7 col-lg-5">
         <h2 class="join-message py-3 text-center text-success bg-dark">Spotify User Profile</h2>
-        <ul>
-            <li>Spotify User ID: <span id="id">{{ profile.id }}</span></li>
-            <li>Spotify User Display Name: <span id="id">{{ profile.display_name }}</span></li>
-            <li>Email used for Spotify: <span id="email">{{ profile.email }}'</span></li>
-            <li>Spotify URI: <a id="uri" href="profile.external_urls.spotify">{{ profile.uri }}</a></li>
-        </ul>
-        <button class="btn btn-dark text-success btn-lg" href="/link_spotify">Re-authenticate with Spotify</button>
+        <table class="table table-hover table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">Spotify User ID:</th>
+                    <th scope="col">Spotify User Display Name:</th>
+                    <th scope="col">Email used for Spotify:</th>
+                    <th scope="col">Spotify URI:</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td><span id="id">{{ profile.id }}</span></td>
+                    <td><span id="id">{{ profile.display_name }}</span></td>
+                    <td><span id="email">{{ profile.email }}'</span></td>
+                    <td><a id="uri" href="profile.external_urls.spotify">{{ profile.uri }}</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn btn-dark text-success btn-lg btn-block" href="/link_spotify">Re-authenticate Spotify Account</button>
     </div>
 </div>
 
