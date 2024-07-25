@@ -7,4 +7,3 @@ class CreatePlaylistForm(FlaskForm):
 
     playlist_name = StringField('Playlist Name', validators=[DataRequired()])
     playlist_description = StringField('Playlist Description', validators=[DataRequired()])
-    public_or_private = BooleanField('Password', validators=[DataRequired()])

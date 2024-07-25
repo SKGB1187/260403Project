@@ -14,11 +14,6 @@ class Song(db.Model):
         db.String(256), 
         nullable=False
     )
-    
-    song_artist = db.Column(
-        db.String(256), 
-        nullable=False
-    )
 
     song_album = db.Column(
         db.String(256), 
@@ -26,4 +21,4 @@ class Song(db.Model):
     )
 
     def __repr__(self):
-        return f"<User #{self.spotify_song_id}: {self.song_title}, {self.song_artist}, {self.song_album}>"
+        return f"<Song #{self.spotify_song_id}: {self.song_title}, {self.song_album}>"

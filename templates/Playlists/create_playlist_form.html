@@ -4,25 +4,30 @@
 
 {% block content %}
 
-  <div class="row justify-content-md-center">
+<div class="row justify-content-md-center">
   <div class="col-md-7 col-lg-5">
     <h2 class="join-message py-3 text-center text-success bg-dark">Create New Playlist</h2>
     <form method="POST" id="login-form">
-        
+
       {{ form.hidden_tag() }}
 
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-      {% for field in form if field.widget.input_type != 'hidden' %}
-        {% for error in field.errors %}
+      <div class="py-3">
+        {% for error in form.playlist_name.errors %}
           <span class="text-danger">{{ error }}</span>
         {% endfor %}
-        <div class="py-3">
-        {{ field(placeholder=field.label.text, class="form-control") }}
-    </div>
-      {% endfor %}
+        {{ form.playlist_name(placeholder=form.playlist_name.label.text, class="form-control") }}
+      </div>
 
-      <button type="submit" class="btn btn-dark text-success btn-lg">Login!</button>
+      <div class="py-3">
+        {% for error in form.playlist_description.errors %}
+          <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+        {{ form.playlist_description(placeholder=form.playlist_description.label.text, class="form-control") }}
+      </div>
+
+      <button type="submit" class="btn btn-dark text-success btn-lg">Create New Playlist!</button>
     </form>
   </div>
 </div>

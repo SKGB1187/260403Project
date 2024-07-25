@@ -1,13 +1,12 @@
 import os
 import base64
 import hashlib
-import aiohttp
 import asyncio
+import requests
 from datetime import datetime
 
 from urllib.parse import urlencode
 from flask import Blueprint, session, redirect, request, render_template, g
-from sqlalchemy import select
 from models import db, User
 
 auth = Blueprint('auth', __name__)
@@ -30,6 +29,7 @@ auth_url = 'https://accounts.spotify.com/authorize'
 
 @auth.route('/link_spotify')
 def login():
+    """ Route for linking the spotify API to the application """
     code_verifier = generate_random_string(64)
     session['code_verifier'] = code_verifier
     loop = asyncio.new_event_loop()
@@ -52,11 +52,12 @@ def login():
 
 @auth.route('/redirect_to_playspotplay')
 async def callback():
+    """ Callback function for redirct from Spotify authorization linkage back to the application """
     code = request.args.get('code')
     code_verifier = session.get('code_verifier')
 
     if code and code_verifier:
-        token_response = await get_token(code, code_verifier)
+        token_response = get_token(code, code_verifier)
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
         if g.user:
@@ -70,25 +71,32 @@ async def callback():
     else:
         return 'Error: Authorization failed'
 
-async def refresh_token():
+def run_refresh_token():
+    """ Function to refresh the access token for the Spotify API """
     if g.user:
         refresh_token = g.user.spotify_refresh_token
 
         if not refresh_token:
+
             return render_template('redirects/redirect_to_auth_link_spotify.html')
 
-        new_access_token = await get_refresh_token(refresh_token)
+        new_access_token = get_refresh_token(refresh_token)
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-        g.user.spotify_access_token = new_access_token
-        g.user.spotify_access_token_set_time = now
+        User.link_spotify_to_database(
+                        g.user.id,
+                        new_access_token['access_token'],
+                        now,
+                        new_access_token['refresh_token'])
+
         db.session.commit()
 
         return True
 
     return False
 
-async def get_token(code, code_verifier):
+def get_token(code, code_verifier):
+    """ Function to initially get an access token from the Spotify API """
     client_id = 'd3bf0a271cf7472c90b736a912177481'
     redirect_uri = 'http://localhost:5000/auth/redirect_to_playspotplay'
 
@@ -100,23 +108,21 @@ async def get_token(code, code_verifier):
         'code_verifier': code_verifier,
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post('https://accounts.spotify.com/api/token', data=payload) as response:
-            token_response = await response.json()
-            return token_response
+    token_response = requests.post("https://accounts.spotify.com/api/token", data = payload).json()
+
+    return token_response 
 
 
-async def get_refresh_token(refresh_token):
+def get_refresh_token(refresh_token):
+    """ Function to initially get a refresh token from the Spotify API """
     client_id = 'd3bf0a271cf7472c90b736a912177481'
-
+    
     payload = {
         'grant_type': 'refresh_token',
         'refresh_token': refresh_token,
         'client_id': client_id,
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post('https://accounts.spotify.com/api/token', data=payload) as response:
-            token_response = await response.json()
-            return token_response['access_token']
-        
+    new_access_token = requests.post("https://accounts.spotify.com/api/token", data = payload).json()
+
+    return new_access_token   

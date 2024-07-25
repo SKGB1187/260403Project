@@ -16,4 +16,4 @@ class Artist(db.Model):
     )
 
     def __repr__(self):
-        return f"<User #{self.spotify_artist_id}: {self.spotify_artist_name}"
+        return f"<Artist #{self.spotify_artist_id}: {self.spotify_artist_name}"

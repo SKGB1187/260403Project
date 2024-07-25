@@ -30,21 +30,32 @@
             <li class="nav-item"><a class="nav-link text-success" href="/sign_up">Sign up</a></li>
             <li class="nav-item"><a class="nav-link text-success" href="/login">Log in</a></li>
             {% else %}
-            <li class="nav-item text-success"><a class="nav-link" href="/users/{{ g.user.id }}">Profile</a></li>
-            <li class="nav-item text-success"><a class="nav-link" href="/playlists">Existing Playlists</a></li>
-            <li class="nav-item text-success"><a class="nav-link" href="/playlists/new">New Playlist</a></li>
-            <li class="nav-item text-success"><a class="nav-link" href="/logout">Log out</a></li>
+            <li class="nav-item"><a class="nav-link text-success" href="/update_profile">Profile</a></li>
+            <li class="nav-item"><a class="nav-link text-success" href="/playlists">Existing Playlists</a></li>
+            <li class="nav-item"><a class="nav-link text-success" href="/create_playlist">New Playlist</a></li>
+            <li class="nav-item"><a class="nav-link text-success" href="/logout">Log out</a></li>
             {% endif %}
           </ul>
         </div>
       </div>
     </nav>
+    
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    <div id="notification" class="notification container-fluid mt-4 col-sm-12" style="{{ 'display: block;' if messages else ''}}">
+      {% if messages %}
+      <ul class=flashes>
+        {% for message in messages %}
+        <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endwith %}
+
   </header>
 
-  <div class="container-fluid">
+  <div class="container-fluid col-sm-12">
     
-    <div id="notification" class="notification"></div>
-      
     {% block content %}
     {% endblock %}
 

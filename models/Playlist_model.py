@@ -22,11 +22,9 @@ class Playlist(db.Model):
 
     user_id = db.Column(
         db.Integer, 
-        db.ForeignKey('users.id'), 
+        db.ForeignKey('users.id', ondelete='CASCADE'), 
         nullable=False
     )
 
-    user = db.relationship('User', backref=db.backref('playlists', lazy=True))
-
     def __repr__(self):
-        return f"<User #{self.spotify_playlist_id}: {self.spotify_playlist_name}, {self.spotify_playlist_description}>"
+        return f"<Playlist #{self.spotify_playlist_id}: {self.spotify_playlist_name}, {self.spotify_playlist_description}>"

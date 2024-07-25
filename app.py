@@ -5,20 +5,20 @@
 
 #scopes needed?: playlist-modify-private playlist-modify-public playlist-read-private user-library-modify user-library-read
 #scopes: https://developer.spotify.com/documentation/web-api/concepts/scopes
-
+import logging
 import os
 import requests
 
 from datetime import datetime, timedelta
 
-from flask import Flask, render_template, flash, request, session, g, current_app, send_from_directory
+from flask import Flask, render_template, flash, request, session, g, current_app, send_from_directory, jsonify
 from flask_wtf.csrf import CSRFProtect
 
-from forms import LoginForm, AddUserForm, CreatePlaylistForm
+from forms import LoginForm, AddSongForm, AddUserForm, CreatePlaylistForm
 
-from models import db, User, Song, Playlist
+from models import db, Artist, Artist_Song, Playlist, Playlist_Song, Song, User, UserPlayListDisplay
 
-from spotify_auth import auth as auth_blueprint, refresh_token
+from spotify_auth import auth as auth_blueprint, run_refresh_token
 
 from sqlalchemy.exc import IntegrityError
 
@@ -52,6 +52,7 @@ CURR_USER_KEY = "curr_user_id"
 
 @app.before_request
 def add_user_to_g():
+    """ Run before a request to check that the logged in user is added to the session and to pull user_id and CSRF_token from database """
     try:
         if CURR_USER_KEY in session:
             user_id = session[CURR_USER_KEY]
@@ -65,6 +66,7 @@ def add_user_to_g():
 
 @app.before_request
 def load_csrf_token():
+    """"Load CSRF token stored in database into the session for the user"""
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
         if user:
@@ -72,30 +74,36 @@ def load_csrf_token():
 
 @app.context_processor
 def inject_csrf_token():
+    """This function is used to pass the CSRF token to the rendering context, making it available in templates."""
     return dict(csrf_token=session.get('_csrf_token'))
 
 @app.route('/favicon.ico', methods=["GET"])
 def favicon():
+    """ Used to generate the favicon route for displaying the application icon on the website tab """
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon_static.ico', mimetype='favicon.ico')
 
 @app.route("/")
 def index():
+    """ Defines the different templates to be used for a logged in user verses an unknown visitor """
     if not g.user:
         return render_template('index.html')
     else:
+        if not g.user.spotify_access_token:
+            flash('Sorry, but you have to link your Spotify Account to use this app.')
+            return render_template('redirects/redirect_to_auth_link_spotify.html')
         return render_template('user/home_logged_in.html')
-
+    
+### Sign up, Login and Logout ###
 
 @app.route('/sign_up', methods=["GET", "POST"])
 def signup():
-    print("start of signup")
+    """ Route for signing up a new user, add them to the database and do an initial link to Spotify API for user """
     form = AddUserForm()
+    valid_form = form.validate_on_submit()
 
-    if form.validate_on_submit():
-        print("validating form")
+    if valid_form:
         try:
-            print("signing up user")
             user = User.signup(
                 username=form.username.data,
                 email=form.email.data,
@@ -108,48 +116,57 @@ def signup():
 
             session[CURR_USER_KEY] = user.id
             session['_csrf_token'] = user.csrf_token
-            print("user added correctly, redirecting to spotify")
+            flash("Account creation successful!", 'success')
             return render_template('redirects/redirect_to_auth_link_spotify.html')
         
         except IntegrityError:
             print("user already exists")
             db.session.rollback()
-            flash("Username already taken", 'danger')
+            flash('Sorry that username is already taken, please pick another', 'error')
         
         except Exception as e:
             print("other exception")
             print(str(e))
             db.session.rollback()
-            flash(str(e), 'danger')
-    
-    print("rendering signup form")
+            flash('Sorry, an error occurred during sign-up, please try again.', 'error')
 
     return render_template('user/sign_up.html', form=form)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
+    """ Route to login an existing user """
     form = LoginForm()
 
-    if form.validate_on_submit():
+    form_valid = form.validate_on_submit()
+
+    if form_valid:
         user = User.authenticate(form.username.data, form.password.data)
 
         if user:
             session[CURR_USER_KEY] = user.id
+            flash('Login successful!', 'success')
             return render_template('redirects/redirect_to_home.html')
+        else:
+            flash('Username or password invalid, please login again.', 'error')
 
     return render_template('user/login_form.html', form=form)
 
 @app.route('/logout')
 def logout():
+    """ Route to logout a user """
     if g.user:
         g.pop("user")
 
     session.clear()
+    flash('Logout successful, see you again soon!', 'success')
 
     return render_template('index.html')
 
+### Spotify Profile Request/Route ###
+
 @app.route('/update_profile')
 def profile_view_change():
+    """ Route for viewing profile information for the linked Spotify Account of a user, also button to re-link Spotify """
     if g.user:
         if g.user.spotify_user_id:
             profile = {
@@ -175,6 +192,7 @@ def profile_view_change():
     return render_template('redirects/redirect_to_login.html')
 
 def get_spotify_profile():
+    """ Support function for /update_profile route, makes get request from Spotify API """
     if g.user:
         bearer = g.user.spotify_access_token
         profile_request = requests.get("https://api.spotify.com/v1/me", headers={"Authorization": "Bearer " + bearer})
@@ -183,8 +201,29 @@ def get_spotify_profile():
         return response
     return 'No tokens found.'
 
+### Playlist retrieval, populate and create ###
+
+@app.route('/playlists', methods=['GET'])
+def retrieve_playlists():
+    """ Route to retrieve user's Spotify playlists """
+    if g.user:
+        check_token_expiry()
+
+        playlists = get_user_playlists()
+
+        if playlists is not None:
+            return render_template('playlists/show_user_playlists.html', playlists=playlists)
+        else:
+            print('playlists is returning none for retrieve_playlists')
+            print('redirecting to error.html for retrieve_playlists')
+            flash('Unexpected error retrieving playlists, please try again.', 'error')
+            return render_template('errors/retrieve_playlists_error.html', message="Could not retrieve playlists")
+    
+    return render_template('redirects/redirect_to_login.html')
+
 @app.route('/create_playlist', methods=['GET', 'POST'])
 def create_new_spotify_playlist():
+    """ Route to create a new Spotify playlist through the Spotify API """
     form = CreatePlaylistForm()
     
     if form.validate_on_submit():
@@ -194,13 +233,11 @@ def create_new_spotify_playlist():
                 bearer = g.user.spotify_access_token
                 user_id = g.user.spotify_user_id
                 playlist_name = form.playlist_name.data
-                description = form.description.data
-                public_or_private = form.public_or_private.data
+                description = form.playlist_description.data
                 
                 payload = {
                     "name": playlist_name,
                     "description": description,
-                    "public": public_or_private
                 }
                 
                 headers = {
@@ -211,7 +248,10 @@ def create_new_spotify_playlist():
                 response = requests.post(f"https://api.spotify.com/v1/users/{user_id}/playlists", headers=headers, json=payload)
                 
                 if response.status_code == 201:
+                    flash('Playlist creation successful!', 'success')
                     return render_template('redirects/redirect_to_user_playlists.html')
+                else:
+                    flash('Sorry, failed to create playlist, please try again.', 'error')
 
         except Exception as e:
             print("other exception")
@@ -219,56 +259,43 @@ def create_new_spotify_playlist():
             db.session.rollback()
             flash(str(e), 'danger')
     
-    return render_template('create_playlist.html', form=form)
- 
-@app.route('/song_search')
-def song_search():
-    if g.user:
-        check_token_expiry()
-        
-        song_name = request.args.get('q')
-        song = get_spotify_song(song_name)
-
-        playlists = get_user_playlists()
-        
-        return render_template('user/song_search_return.html', song=song, playlists=playlists)
-    
-    return render_template('redirects/redirect_to_login.html')
+    return render_template('playlists/create_playlist_form.html', form=form)
 
 @app.route("/playlist/<playlist_id>")
 def view_specific_playlist(playlist_id):
+    """ Route to retrieve an indivual playlist's content """
     if g.user:
-        playlist = Playlist.query.filter_by(spotify_playlist_id=playlist_id, user_id=g.user.id).first()
-        if playlist:
-            return render_template('view_playlist.html', playlist=playlist)
+        playlist_content = UserPlayListDisplay.query.filter_by(spotify_playlist_id=playlist_id, user_id=g.user.id).all()
+        if playlist_content:
+            return render_template('playlists/singular_user_playlist.html', playlist_content=playlist_content)
         else:
+            flash('Sorry, could not find playlist, please try again', 'error')
             return "Playlist not found", 404
     else:
+        flash('Please log in to use the playlist functionality of the app.', 'error')
         return render_template('redirects/redirect_to_login.html')
 
-
 def get_user_playlists():
+    """ Function to call Spotify API and return user playlists """
     if g.user:
         bearer = g.user.spotify_access_token
         url = 'https://api.spotify.com/v1/me/playlists'
         headers = {
             "Authorization": f"Bearer {bearer}"
         }
-
         response = requests.get(url, headers=headers)
         
         if response.status_code == 200:
             playlists = response.json().get('items', [])
+
             for playlist in playlists:
-                # Extract playlist details
                 playlist_id = playlist['id']
                 playlist_name = playlist['name']
                 playlist_description = playlist.get('description', '')
 
-                # Check if the playlist already exists in the database
                 existing_playlist = Playlist.query.filter_by(spotify_playlist_id=playlist_id).first()
+
                 if not existing_playlist:
-                    # Create a new Playlist object
                     new_playlist = Playlist(
                         spotify_playlist_id=playlist_id,
                         spotify_playlist_name=playlist_name,
@@ -276,122 +303,164 @@ def get_user_playlists():
                         user_id=g.user.id
                     )
 
-                    # Add to the session
                     db.session.add(new_playlist)
 
-                # Save songs and artists from the playlist
-                tracks_url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
-                tracks_response = requests.get(tracks_url, headers=headers)
-                if tracks_response.status_code == 200:
-                    tracks = tracks_response.json().get('items', [])
-                    for track in tracks:
-                        track_info = track['track']
-                        song_id = track_info['id']
-                        song_title = track_info['name']
-                        song_album = track_info['album']['name']
-                        song_artists = track_info['artists']
-
-                        # Check if the song already exists in the database
-                        existing_song = Song.query.filter_by(spotify_song_id=song_id).first()
-                        if not existing_song:
-                            # Create a new Song object
-                            new_song = Song(
-                                spotify_song_id=song_id,
-                                song_title=song_title,
-                                song_artist=', '.join([artist['name'] for artist in song_artists]),
-                                song_album=song_album
-                            )
-
-                            # Add to the session
-                            db.session.add(new_song)
-
-                        # Create a Playlist_Song association
-                        playlist_song = Playlist_Song(
-                            spotify_song_id=song_id,
-                            spotify_playlist_id=playlist_id
-                        )
-                        db.session.add(playlist_song)
-
-                        for artist in song_artists:
-                            artist_id = artist['id']
-                            artist_name = artist['name']
-
-                            # Check if the artist already exists in the database
-                            existing_artist = Artist.query.filter_by(spotify_artist_id=artist_id).first()
-                            if not existing_artist:
-                                # Create a new Artist object
-                                new_artist = Artist(
-                                    spotify_artist_id=artist_id,
-                                    spotify_artist_name=artist_name
-                                )
-
-                                # Add to the session
-                                db.session.add(new_artist)
-
-                            # Create an Artist_Song association
-                            artist_song = Artist_Song(
-                                spotify_song_id=song_id,
-                                spotify_artist_id=artist_id
-                            )
-                            db.session.add(artist_song)
-
-            # Commit the session to save the playlists, songs, and artists
             db.session.commit()
-            
+
             return playlists
         else:
             return []
     else:
-        return []
+        flash('Sorry, failed to get your playlist from Spotify, please try again.', 'error')
+        return render_template('redirects/redirect_to_login.html')
+
+def populate_user_playlists(playlist_id):
+    """ Function to populate user playlists with song data """
+    if g.user:
+        bearer = g.user.spotify_access_token
+        url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
+        headers = {
+            "Authorization": f"Bearer {bearer}"
+        }
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            tracks = response.json().get('items', [])
+            for track in tracks:
+                track_info = track['track']
+                song_id = track_info['id']
+                song_title = track_info['name']
+                song_album = track_info['album']['name']
+                song_artists = track_info['artists']
+
+                existing_song = Song.query.filter_by(spotify_song_id=song_id).first()
+                if not existing_song:
+                    new_song = Song(
+                        spotify_song_id=song_id,
+                        song_title=song_title,
+                        song_album=song_album
+                    )
+                    db.session.add(new_song)
+                    db.session.commit()
+
+                for artist in song_artists:
+                    artist_id = artist['id']
+                    artist_name = artist['name']
+
+                    existing_artist = Artist.query.filter_by(spotify_artist_id=artist_id).first()
+                    if not existing_artist:
+                        new_artist = Artist(
+                            spotify_artist_id=artist_id,
+                            spotify_artist_name=artist_name
+                        )
+                        db.session.add(new_artist)
+                        db.session.commit()
+
+                playlist_song = Playlist_Song(
+                    spotify_song_id=song_id,
+                    spotify_playlist_id=playlist_id
+                )
+                db.session.add(playlist_song)
+                db.session.commit()
+
+                artist_song = Artist_Song(
+                    spotify_song_id=song_id,
+                    spotify_artist_id=artist_id
+                )
+                db.session.add(artist_song)
+                db.session.commit()
+        db.session.commit()
+    else:
+        flash('Please log in to use the playlist functionality of the app.', 'error')
+        return render_template('redirects/redirect_to_login.html')
+
+### Song retrieval and populate routes and functions ###
+
+@app.route('/song_search', methods=['GET', 'POST'])
+def song_search():
+    form = AddSongForm()
+    if request.method == 'POST':
+        song_id = form.song_id.data
+        playlist_id = form.playlist_id.data
+        print(song_id, playlist_id)
+        response = add_song_to_spotify_playlist(song_id, playlist_id)
+        populate_user_playlists(playlist_id)
+        if response.status_code == 201:
+            flash('Song added to playlist successfully!', 'success')
+        else:
+            flash('Sorry, could not add song to playlist, please try again', 'error')
+            return render_template('redirects/redirect_to_home.html')
+        return render_template('redirects/redirect_to_user_playlists.html', id = playlist_id)
+
+    song_name = request.args.get('q')
+    song = get_spotify_song(song_name)
+    playlists = get_user_playlists()
+
+    if isinstance(playlists, list) and all(isinstance(p, dict) for p in playlists):
+        form.playlist_id.choices = [(playlist['id'], playlist['name']) for playlist in playlists]
+    else:
+        form.playlist_id.choices = []
+
+    return render_template('user/song_search_return.html', form=form, song=song, playlists=playlists)
+
+@app.route('/add_to_playlist', methods=['POST'])
+def add_to_playlist():
+    """Route to add a song to a playlist using the Spotify API"""
+    if g.user:
+        check_token_expiry()
+        try:
+            song_id = request.form.get('song_id')
+            playlist_id = request.form.get('playlist_id')
+
+            if song_id and playlist_id:
+                response = add_song_to_spotify_playlist(song_id, playlist_id)
+                if response.status_code == 201:
+                    flash('Song added to playlist successfully!', 'success')
+                else:
+                    flash('Sorry, failed to add song to playlist, please try again.', 'error')
+            else:
+                flash('The Song is or playlist id is missing, please try again.', 'error')
+
+        except Exception as e:
+            flash('Sorry, an unknown error occurred, please try again.', 'error')
+
+    else:
+        flash('Please log in to use the add song to playlist functionality of the app.', 'error')
+        return render_template('redirects/redirect_to_login.html')
+
+    return render_template('redirects/redirect_to_home.html')
 
 def get_spotify_song(song_name):
+    """Function to make API call for searched song"""
     if g.user:
         bearer = g.user.spotify_access_token
         song_search_url = f'https://api.spotify.com/v1/search?q={song_name}&type=track&include_external=audio'
         song_search = requests.get(song_search_url, headers={"Authorization": "Bearer " + bearer})
         response = song_search.json()
-        
         return response
     else:
         return 'No tokens found.'
-    
-@app.route('/add_to_playlist', methods=['POST'])
-def add_to_playlist():
-    if g.user:
-        song_id = request.args.get('song_id')
-        playlist_id = request.args.get('playlist_id')
-        
-        result = add_song_to_spotify_playlist(song_id, playlist_id)
-        
-        if result:
-            return 'Song added to playlist successfully!', 200
-        else:
-            return 'Failed to add song to playlist.', 400
-    return 'User not authenticated.', 401
+
 
 def add_song_to_spotify_playlist(song_id, playlist_id):
+    """Function to add a song to a Spotify playlist"""
     if g.user:
         bearer = g.user.spotify_access_token
-        url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
-        headers = {
-            "Authorization": f"Bearer {bearer}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "uris": [f"spotify:track:{song_id}"]
-        }
-
-        response = requests.post(url, headers=headers, json=data)
-        
-        return response.status_code == 201
+        add_to_playlist_url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
+        payload = {'uris': [f'spotify:track:{song_id}']}
+        response = requests.post(add_to_playlist_url, headers={"Authorization": "Bearer " + bearer, "Content-Type": "application/json"}, json=payload)
+        return response
     else:
-        return False
+        return 'No tokens found.'
+
+### Oath 2 helper functions ###
 
 def check_token_expiry():
+    """ Function to check if access token is expired and needs to be refreshed """
     if g.user:
         token_time = datetime.strptime(g.user.spotify_access_token_set_time, "%d/%m/%Y %H:%M:%S")
         expiration_time = token_time + timedelta(minutes=55)
         now = datetime.now()
         
         if now > expiration_time:
-            refresh_token()
+            run_refresh_token()

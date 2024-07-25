@@ -4,22 +4,18 @@
 
 {% block content %}
 
-{% if playlist %}
+{% if playlist_content %}
 <div class="search-results">
     <h2>Playlist Details:</h2>
     <table class="table table-striped table-dark text-success table-hover">
         <thead>
             <tr>
                 <th scope="col">Playlist Name</th>
-                <th scope="col">Description</th>
-                <th scope="col">Playlist ID</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>{{ playlist.spotify_playlist_name }}</td>
-                <td>{{ playlist.spotify_playlist_description }}</td>
-                <td>{{ playlist.spotify_playlist_id }}</td>
+                <td>{{ playlist_content[0].spotify_playlist_name }}</td>
             </tr>
         </tbody>
     </table>
@@ -29,15 +25,19 @@
         <thead>
             <tr>
                 <th scope="col">Song Title</th>
+                <th scope="col">Song Album</th>
                 <th scope="col">Artist</th>
             </tr>
         </thead>
         <tbody>
-            {% for playlist_song in playlist.playlist_song_join %}
+            {% for playlist_song in playlist_content %}
+            
             <tr>
-                <td>{{ playlist_song.songs.song_title }}</td>
-                <td>{{ playlist_song.songs.song_artist }}</td>
+                <td>{{ playlist_song.song_title }}</td>
+                <td>{{ playlist_song.song_album }}</td>
+                <td>{{ playlist_song.spotify_artist_name }}</td>
             </tr>
+            
             {% endfor %}
         </tbody>
     </table>

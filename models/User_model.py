@@ -137,14 +137,12 @@ class User(db.Model):
 
         If can't find matching user (or if password is wrong), returns False.
         """
-        print('entered User.authenticate function')
         user = cls.query.filter_by(username=username).first()
-        print('queried username in the database')
 
         if user and bcrypt.check_password_hash(user.password, password):
-            print('entered if statement for user and bcrypt of password')
             return user
-        print('user and bcrypt of password failed')
-        return False
+        else:
+            print('user and bcrypt of password failed')
+            return False
 
 

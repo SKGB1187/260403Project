@@ -12,19 +12,15 @@ class Playlist_Song(db.Model):
 
     spotify_song_id = db.Column(
         db.String(256), 
-        db.ForeignKey('songs.spotify_song_id'), 
+        db.ForeignKey('songs.spotify_song_id', ondelete='CASCADE'), 
         nullable=False
     )
-
-    songs = db.relationship('Song', backref=db.backref('playlist_song_join', lazy=True))
 
     spotify_playlist_id = db.Column(
         db.String(256), 
-        db.ForeignKey('artists.spotify_artist_id'), 
+        db.ForeignKey('playlists.spotify_playlist_id', ondelete='CASCADE'), 
         nullable=False
     )
 
-    playlists = db.relationship('Playlist', backref=db.backref('playlist_song_join', lazy=True))
-
     def __repr__(self):
-        return f"<User #{self.id}: {self.spotify_song_id}, {self.spotify_playlist_id}>"
+        return f"<Playlist_Song #{self.id}: {self.spotify_song_id}, {self.spotify_playlist_id}>"

@@ -19,41 +19,29 @@
         <tbody>
             {% for track in song['tracks']['items'] %}
             <tr>
-                <th><strong>{{ track['name'] }}</strong></th> 
-                <th> {{ track['artists'][0]['name'] }} </th>
-                <th>
-                    <select class="form-select bg-success text-dark" id="playlist-{{ loop.index }}">
+                <td><strong>{{ track['name'] }}</strong></td>
+                <td>{{ track['artists'][0]['name'] }}</td>
+                <td>
+                    <form id="{{ track['id'] }}" action="{{ url_for('song_search') }}" method="post">
+                        {{ form.csrf_token }}
+                    </form>
+
+                    <input form="{{ track['id'] }}" type="hidden" name="song_id" value="{{ track['id'] }}">
+                    <select form="{{ track['id'] }}" class="form-select bg-success text-dark" name="playlist_id">
                         {% for playlist in playlists %}
-                        <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                        <option value="{{ playlist['id'] }}">{{ playlist['name'] }}</option>
                         {% endfor %}
                     </select>
-                </th>
-                <th> 
-                <button class="btn btn-success text-dark"
-                    onclick="addToPlaylist('{{ track['id'] }}', document.getElementById('playlist-{{ loop.index }}').value)">Add
-                    to Playlist</button>
-                </th>
+                </td>
+                <td>
+                    <button form="{{ track['id'] }}" type="submit" class="btn btn-success text-dark mt-2">Add to Playlist</button>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
 {% endif %}
 
-<script>
-    function addToPlaylist(songId, playlistId) {
-      fetch(`/add_to_playlist?song_id=${songId}&playlist_id=${playlistId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(response => {
-        if (response.ok) {
-          alert('Song added to playlist successfully!');
-        } else {
-          alert('Failed to add song to playlist.');
-        }
-      });
-    }
-  </script>
 {% endblock %}
