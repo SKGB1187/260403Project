@@ -3,9 +3,21 @@
 
 Many people use Spotify daily for listening to music to podcast to audiobooks. The main Spotify interface can be a bit clunky and difficult for users to add different playlists and to modify those playlists by adding content. This application seeks to streamline this process by integrating with the spotify API and providing clear links for adding playlists, searching for songs and reviewing your basic Spotify account information.
 
+## Deployment Information
+
+This application has been deployed using Render.com and can be found at:
+
+## Standard User Flow
+
+A user will land on the homepage. This page provides the user with the option to sign-up or to login. The page requires a user to create an account in order to use it. When the user creates an account they will automatically be redirected to link to their Spotify Account. If a user chooses not to link their Spotify account they will be redirected to link their account and warned that the application cannot be utilized without this link. The link to Spotify relies on Oath 2.0 authentication. Once a user successfully links their Spotify account they have the ability to view their Spotify profile information, look at their existing Spotify playlists, create a new Spotify playlist, search for songs through Spotify and add those songs to any of their existing playlists. The website is set to redirect to login for any user that is not set at the g.user. Once done the user can logout of the application.
+
 ## Technologies Utilized
 
-This application primarily utilizes: Python, Flask, HTML, PostgreSQL, and CSS. It has many package dependencies that can be found in the requirement.txt file. Some of the libraries included in this application are WTForms and SQLAlchemy.
+This application primarily utilizes: Python, Flask, HTML, PostgreSQL, and CSS. It has many package dependencies that can be found in the requirement.txt file. Some of the libraries included in this application are WTForms and SQLAlchemy. It also is integrated with the Spotify API for web development. This API requires Oath 2.0 authentication routes to be developed and utilized.
+
+## API Integration
+
+This application utilizes the Spotify API for web development. This API requires Oath 2.0 authenitcation. The API has much more functionality than has been implemented in this application and is a straightforward API to utilize once authentication is properly in place.
 
 ## Project Background
 ### Capstone Project One:Overview
