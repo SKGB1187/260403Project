@@ -97,8 +97,7 @@ def run_refresh_token():
 
 def get_token(code, code_verifier):
     """ Function to initially get an access token from the Spotify API """
-    redirect_uri = 'http://localhost:5000/auth/redirect_to_playspotplay'
-
+    
     payload = {
         'client_id': client_id,
         'grant_type': 'authorization_code',
