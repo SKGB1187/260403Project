@@ -23,7 +23,7 @@ def base64encode(hashed_input):
     return base64.urlsafe_b64encode(hashed_input).rstrip(b'=').decode('ascii')
 
 client_id = os.environ.get('spotify_client_id','')
-redirect_uri = 'http://localhost:5000/auth/redirect_to_playspotplay'
+redirect_uri = 'https://playspotplay.onrender.com/auth/redirect_to_playspotplay' #'http://localhost:5000/auth/redirect_to_playspotplay'
 scope = 'playlist-modify-private playlist-modify-public playlist-read-private user-library-modify user-library-read user-read-private user-read-email'
 auth_url = 'https://accounts.spotify.com/authorize'
 

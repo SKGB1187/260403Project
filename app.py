@@ -92,7 +92,7 @@ def index():
         if not g.user.spotify_access_token:
             flash('Sorry, but you have to link your Spotify Account to use this app.')
             return render_template('redirects/redirect_to_auth_link_spotify.html')
-        return render_template('user/home_logged_in.html')
+        return render_template('User/home_logged_in.html')
     
 ### Sign up, Login and Logout ###
 
@@ -130,7 +130,7 @@ def signup():
             db.session.rollback()
             flash('Sorry, an error occurred during sign-up, please try again.', 'error')
 
-    return render_template('user/sign_up.html', form=form)
+    return render_template('User/sign_up.html', form=form)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -149,7 +149,7 @@ def login():
         else:
             flash('Username or password invalid, please login again.', 'error')
 
-    return render_template('user/login_form.html', form=form)
+    return render_template('User/login_form.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -188,7 +188,7 @@ def profile_view_change():
                 spotify_user_display_name=profile['display_name'],
                 spotify_acct_email=profile['email']
             )
-        return render_template('user/spotify_profile.html', profile=profile)
+        return render_template('User/spotify_profile.html', profile=profile)
     return render_template('redirects/redirect_to_login.html')
 
 def get_spotify_profile():
@@ -212,7 +212,7 @@ def retrieve_playlists():
         playlists = get_user_playlists()
 
         if playlists is not None:
-            return render_template('playlists/show_user_playlists.html', playlists=playlists)
+            return render_template('Playlists/show_user_playlists.html', playlists=playlists)
         else:
             print('playlists is returning none for retrieve_playlists')
             print('redirecting to error.html for retrieve_playlists')
@@ -259,7 +259,7 @@ def create_new_spotify_playlist():
             db.session.rollback()
             flash(str(e), 'danger')
     
-    return render_template('playlists/create_playlist_form.html', form=form)
+    return render_template('Playlists/create_playlist_form.html', form=form)
 
 @app.route("/playlist/<playlist_id>")
 def view_specific_playlist(playlist_id):
@@ -267,7 +267,7 @@ def view_specific_playlist(playlist_id):
     if g.user:
         playlist_content = UserPlayListDisplay.query.filter_by(spotify_playlist_id=playlist_id, user_id=g.user.id).all()
         if playlist_content:
-            return render_template('playlists/singular_user_playlist.html', playlist_content=playlist_content)
+            return render_template('Playlists/singular_user_playlist.html', playlist_content=playlist_content)
         else:
             flash('Sorry, could not find playlist, please try again', 'error')
             return "Playlist not found", 404
@@ -401,7 +401,7 @@ def song_search():
     else:
         form.playlist_id.choices = []
 
-    return render_template('user/song_search_return.html', form=form, song=song, playlists=playlists)
+    return render_template('User/song_search_return.html', form=form, song=song, playlists=playlists)
 
 @app.route('/add_to_playlist', methods=['POST'])
 def add_to_playlist():
