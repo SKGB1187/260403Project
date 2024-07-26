@@ -307,6 +307,9 @@ def get_user_playlists():
 
             db.session.commit()
 
+            for playlist in playlists:
+                populate_user_playlists(playlist['id'])
+
             return playlists
         else:
             return []
