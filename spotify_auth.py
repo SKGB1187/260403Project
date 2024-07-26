@@ -22,7 +22,7 @@ async def sha256(random_string):
 def base64encode(hashed_input):
     return base64.urlsafe_b64encode(hashed_input).rstrip(b'=').decode('ascii')
 
-client_id = 'd3bf0a271cf7472c90b736a912177481'
+client_id = os.environ.get('spotify_client_id','')
 redirect_uri = 'http://localhost:5000/auth/redirect_to_playspotplay'
 scope = 'playlist-modify-private playlist-modify-public playlist-read-private user-library-modify user-library-read user-read-private user-read-email'
 auth_url = 'https://accounts.spotify.com/authorize'
@@ -97,7 +97,6 @@ def run_refresh_token():
 
 def get_token(code, code_verifier):
     """ Function to initially get an access token from the Spotify API """
-    client_id = 'd3bf0a271cf7472c90b736a912177481'
     redirect_uri = 'http://localhost:5000/auth/redirect_to_playspotplay'
 
     payload = {
@@ -115,7 +114,6 @@ def get_token(code, code_verifier):
 
 def get_refresh_token(refresh_token):
     """ Function to initially get a refresh token from the Spotify API """
-    client_id = 'd3bf0a271cf7472c90b736a912177481'
     
     payload = {
         'grant_type': 'refresh_token',
