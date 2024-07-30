@@ -19,6 +19,24 @@ This application primarily utilizes: Python, Flask, HTML, PostgreSQL, and CSS. I
 
 This application utilizes the Spotify API for web development. This API requires Oath 2.0 authenitcation. The API has much more functionality than has been implemented in this application and is a straightforward API to utilize once authentication is properly in place.
 
+## Setup for Application outside of Render Deployment
+
+In order to utilize this application outside of the deployed version on Render the following things need to be done:
+- clone repository to your system
+- setup environmental variables:
+    - For database connection: 'playspotplay_connection', 'postgresql:///playspotplay'
+    - For Spotify API: 'spotify_client_id',''
+        - Please note that a spotify client id is required from the Spotify Web Development API website. Go to the following website and follow the steps to get your own client id:  	[Spotify Web API](https://developer.spotify.com/documentation/web-api)
+- Spotify Web API setup:
+    - Once you have your Spotify client id, you will also need to set the redirect uri on the Spotify website for your application. This must be precise or the application will not work as expected. An example for this is http://localhost:5000/auth/redirect_to_playspotplay, where /auth/redirect_to_playspotplay is the route that has been established in this application.
+    - Please Note: It is very important that your client id and your redirect uri are setup on the Spotify Web API website for this application to work. Failure to do so will result in the Oath 2.0 authorization failing and the application not working.
+- Once the environmental variables and the Spotify Web API client are properly setup you should be able to run the application on your local machine and make changes as desired.
+- Good Luck!
+
+## Database Schema
+
+Altough the database schema has always been and is included below (under project steps, item 3) here it is again: ![Copy of Database Schema](ERD.png)
+
 ## Project Background
 ### Capstone Project One:Overview
 

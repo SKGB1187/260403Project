@@ -47,7 +47,6 @@ class UserPlayListDisplay(db.Model):
         db.String(256)
     )
 
-
     spotify_song_id = db.Column(
         db.String(256)
         ,primary_key=True,

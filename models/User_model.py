@@ -3,7 +3,10 @@ import os
 
 from . import db
 
+from sqlalchemy.exc import IntegrityError
+
 from flask_bcrypt import Bcrypt
+from DBActionResult import DBActionResult
 
 bcrypt = Bcrypt()
 
@@ -44,13 +47,13 @@ class User(db.Model):
     spotify_user_id = db.Column(
         db.String(120),
         unique = True,
-         nullable = True
+        nullable = True
     )
 
     spotify_user_display_name = db.Column(
         db.String(120),
         unique = False,
-         nullable = True
+        nullable = True
     )
 
     spotify_acct_email = db.Column(
@@ -84,15 +87,35 @@ class User(db.Model):
         Hashes password and adds user to system.
         """
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+        ret: DBActionResult[User] = DBActionResult(None, False, "")
 
-        user = cls(
-            username=username,
-            email=email,
-            password=hashed_pwd,
-        )
+        try:
+            user = cls(
+                username=username,
+                email=email,
+                password=hashed_pwd,
+            )
 
-        db.session.add(user)
-        return user
+            db.session.add(user)
+            db.session.commit()
+
+            ret.value = user
+            ret.is_success = True
+            ret.message = "Account creation successful!"
+
+        except IntegrityError:
+            print("user already exists")
+            db.session.rollback()
+            ret.message = 'Sorry that username is already taken, please pick another'
+        
+        except Exception as e:
+            print("other exception")
+            print(str(e))
+            db.session.rollback()
+            ret.message = 'Sorry, an error occurred during sign-up, please try again.'
+
+        return ret
+    
     @classmethod
     def link_spotify_to_database(cls, user_id, spotify_access_token, spotify_access_token_set_time, spotify_refresh_token):
         """
@@ -116,16 +139,30 @@ class User(db.Model):
         """
         Add spotify Account Information to the User class
         """
-        user = cls.query.get(user_id)
-        if user:
-            user.spotify_user_id = spotify_user_id,
-            user.spotify_user_display_name = spotify_user_display_name,
-            user.spotify_acct_email = spotify_acct_email
-        
-            db.session.commit()
+        ret: DBActionResult[User] = DBActionResult(None, False, "")
 
-            return user
-        return None
+        try:
+            user = cls.query.get(user_id)
+            if user:
+                user.spotify_user_id = spotify_user_id,
+                user.spotify_user_display_name = spotify_user_display_name,
+                user.spotify_acct_email = spotify_acct_email
+            
+                db.session.commit()
+
+                ret.value = user
+                ret.is_success = True
+                ret.message = "Spotify profile pull successful!"
+
+                return user
+            return None
+        except Exception as e:
+            print("other exception")
+            print(str(e))
+            db.session.rollback()
+            ret.message = 'Sorry, an error occurred pulling Spotify profile, please try again.'
+
+        return ret
 
     @classmethod
     def authenticate(cls, username, password):
