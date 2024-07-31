@@ -1,5 +1,7 @@
 from . import db
 
+from models import DBActionResult
+
 class Artist_Song(db.Model):
     """User in the system."""
 
@@ -25,3 +27,38 @@ class Artist_Song(db.Model):
 
     def __repr__(self):
         return f"<Artist_Song #{self.id}: {self.spotify_song_id}, {self.spotify_artist_id}>"
+    
+    @classmethod
+    def add_artist_song_entry(cls, spotify_song_id, spotify_artist_id):
+        """Add user playlists to database from Spotify API query"""
+        ret: DBActionResult[Artist_Song] = DBActionResult(None, False, "")
+        if not Artist_Song.is_existing_artist_song_combination():
+            try:
+                new_artist_song = cls(
+                    spotify_song_id = spotify_song_id,
+                    spotify_artist_id = spotify_artist_id
+                    )
+                db.session.add(new_artist_song)
+                db.session.commit()
+
+                ret.value = new_artist_song
+                ret.is_success = True
+                ret.message = "Artist_Song successfully added!"
+            
+            except Exception as e:
+                print("Exception:", str(e))
+                db.session.rollback()
+                ret.message = 'Sorry, an error occurred during artist add, please try again.'
+
+            return ret
+
+    @classmethod
+    def is_existing_artist_song_combination(cls, spotify_song_id, spotify_artist_id):
+        ret = False
+        existing = Artist_Song.query.filter_by(spotify_song_id=spotify_song_id).first()
+        for spotify_artist_id in existing:
+            if spotify_artist_id == spotify_artist_id:
+                ret = True
+                return ret
+                
+        return ret

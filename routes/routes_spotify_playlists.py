@@ -1,17 +1,14 @@
-import requests
-
 from flask import Blueprint
 from flask import g
 from flask import flash, render_template
 
 from forms import CreatePlaylistForm
 
-from models import db
 from models import UserPlayListDisplay
 
 from routes_decorators import check_token_expiry, login_required, spotify_link_required
 
-from utils import get_user_playlists, populate_user_playlists
+from utils import create_spotify_playlist, get_user_playlists, add_user_playlist_to_db
 
 playlists_spotify = Blueprint('playlists_spotify', __name__)
 
@@ -24,6 +21,7 @@ def retrieve_playlists():
     playlists = get_user_playlists()
 
     if playlists is not None:
+        add_user_playlist_to_db(playlists)
         return render_template('Playlists/show_user_playlists.html', playlists=playlists)
     else:
         return render_template('errors/retrieve_playlists_error.html', message="Could not retrieve playlists")
@@ -35,38 +33,14 @@ def retrieve_playlists():
 def create_new_spotify_playlist():
     """ Route to create a new Spotify playlist through the Spotify API """
     form = CreatePlaylistForm()
-    
-    if form.validate_on_submit():
-        try:
+    valid_form = form.validate_on_submit()
 
-            bearer = g.user.spotify_access_token
-            user_id = g.user.spotify_user_id
+    if valid_form:
+            
             playlist_name = form.playlist_name.data
             description = form.playlist_description.data
             
-            payload = {
-                "name": playlist_name,
-                "description": description,
-            }
-            
-            headers = {
-                "Authorization": "Bearer " + bearer,
-                "Content-Type": "application/json"
-            }
-            
-            response = requests.post(f"https://api.spotify.com/v1/users/{user_id}/playlists", headers=headers, json=payload)
-            
-            if response.status_code == 201:
-                flash('Playlist creation successful!', 'success')
-                return render_template('redirects/redirect_to_user_playlists.html')
-            else:
-                flash('Sorry, failed to create playlist, please try again.', 'error')
-
-        except Exception as e:
-            print("other exception")
-            print(str(e))
-            db.session.rollback()
-            flash(str(e), 'danger')
+            create_spotify_playlist(playlist_name, description)
     
     return render_template('Playlists/create_playlist_form.html', form=form)
 

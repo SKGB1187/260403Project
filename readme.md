@@ -21,7 +21,7 @@ This application utilizes the Spotify API for web development. This API requires
 
 ## Setup for Application outside of Render Deployment
 
-In order to utilize this application outside of the deployed version on Render the following things need to be done:
+In order to utilize this application from a clone the following things must be done:
 - clone repository to your system
 - setup environmental variables:
     - For database connection: 'playspotplay_connection', 'postgresql:///playspotplay'
@@ -30,12 +30,35 @@ In order to utilize this application outside of the deployed version on Render t
 - Spotify Web API setup:
     - Once you have your Spotify client id, you will also need to set the redirect uri on the Spotify website for your application. This must be precise or the application will not work as expected. An example for this is http://localhost:5000/auth/redirect_to_playspotplay, where /auth/redirect_to_playspotplay is the route that has been established in this application.
     - Please Note: It is very important that your client id and your redirect uri are setup on the Spotify Web API website for this application to work. Failure to do so will result in the Oath 2.0 authorization failing and the application not working.
-- Once the environmental variables and the Spotify Web API client are properly setup you should be able to run the application on your local machine and make changes as desired.
+- For the user_playlist_display.py model you will need to setup a view in your database to have it work properly and have your playlists display within the application.
+    - Note this is a view model for displaying the playlist information for a user, to get around the issues with SQLalchemy and to avoid many many calls to the database this was created and implemented. For a production server the following will need to be done on the database for proper application functionality.
+
+        - Create View from Database using the following Query
+        
+            create or replace view user_playlist_display as
+
+            select distinct
+                a.user_id,
+                a.spotify_playlist_id,
+                a.spotify_playlist_name,
+                b.spotify_song_id,
+                b.song_title,
+                b.song_album,
+                e.spotify_artist_name
+            from playlists a
+                join playlist_song_join c on (a.spotify_playlist_id = c.spotify_playlist_id)
+                join songs b on (c.spotify_song_id = b.spotify_song_id)
+                join artist_song_join d on (c.spotify_song_id = d.spotify_song_id)
+                join artists e on (d.spotify_artist_id = e.spotify_artist_id) 
+
+        - Regrant permissions to database user using the following grant command
+
+            grant all privileges on all tables in schema public to playspotplay
 - Good Luck!
 
 ## Database Schema
 
-Altough the database schema has always been and is included below (under project steps, item 3) here it is again: ![Copy of Database Schema](ERD.png)
+The database schema for this application is as follows: ![Database Schema](ERD.png)
 
 ## Project Background
 ### Capstone Project One:Overview

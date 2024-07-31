@@ -1,6 +1,6 @@
 import unittest
 from flask import session
-from app import app, db, CURR_USER_KEY
+from __init__ import app, db, CURR_USER_KEY
 from models import User, Playlist, Song
 
 class FlaskAppTests(unittest.TestCase):
