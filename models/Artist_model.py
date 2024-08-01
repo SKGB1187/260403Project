@@ -48,7 +48,7 @@ class Artist(db.Model):
     def is_existing_artist(cls, spotify_artist_id):
         ret = False
         existing = Artist.query.filter_by(spotify_artist_id=spotify_artist_id).first()
-        if not existing:
+        if existing:
             ret = True
 
         return ret

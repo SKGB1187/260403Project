@@ -74,9 +74,6 @@ def callback():
 
                 session.clear()
                 flash('Sorry you can only link a Spotify account to one user account, please link a different Spotify Account')
-                
-
-
                 return render_template('index.html')
             
             else:
