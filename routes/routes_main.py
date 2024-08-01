@@ -43,8 +43,8 @@ def inject_csrf_token():
 @main.route('/favicon.ico', methods=["GET"])
 def favicon():
     """ Used to generate the favicon route for displaying the application icon on the website tab """
-    return send_from_directory(os.path.join(main.root_path, 'static'),
-                               'favicon_static.ico', mimetype='favicon.ico')
+    return send_from_directory(os.path.join('static'),
+                               'favicon_static.ico', mimetype='image/vnd.microsoft.icon')
 
 @main.route("/")
 def index():
