@@ -15,7 +15,7 @@
     <div class="col-md-12 p-lg-5 mx-auto my-1">
         {% if g.user %}
         <li class="nav-item">
-            <form class="d-flex" action="{{ url_for('song_search') }}" method="get">
+            <form class="d-flex" action="/song_search" method="get">
               <input name="q" required class="form-control me-2" placeholder="Enter Song Name" id="search">
               <button class="btn btn-dark text-success" type="submit">
                 <span class="fa fa-search"></span> Search

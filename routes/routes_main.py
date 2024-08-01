@@ -4,14 +4,12 @@ from flask import Blueprint
 from flask import current_app, g, session
 from flask import flash, render_template, send_from_directory
 
-from forms import AddUserForm, LoginForm
+from ..forms import AddUserForm, LoginForm
 
-from models import db
-from models import User, DBActionResult
+from ..models import db
+from ..models import User, DBActionResult
 
-from routes_decorators import check_token_expiry, login_required, spotify_link_required
-
-from utils import CURR_USER_KEY
+from ..utils import CURR_USER_KEY
 
 main = Blueprint('main', __name__)
 
@@ -49,12 +47,11 @@ def favicon():
                                'favicon_static.ico', mimetype='favicon.ico')
 
 @main.route("/")
-@login_required
-@spotify_link_required
 def index():
     """ Defines the different templates to be used for a logged in user verses an unknown visitor """
-
-    return render_template('User/home_logged_in.html')
+    if g.user:
+        return render_template('User/home_logged_in.html')
+    return render_template('index.html')
 
 @main.route('/sign_up', methods=["GET", "POST"])
 def signup():
@@ -85,8 +82,6 @@ def signup():
     return render_template('User/sign_up.html', form=form)
 
 @main.route('/login', methods=["GET", "POST"])
-@spotify_link_required
-@check_token_expiry
 def login():
     """ Route to login an existing user """
     form = LoginForm()

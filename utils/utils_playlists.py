@@ -1,8 +1,8 @@
 from flask import g
 from flask import flash
 
-from models import db
-from models import Artist, Artist_Song, Playlist, Playlist_Song, Song
+from ..models import db
+from ..models import Artist, Artist_Song, Playlist, Playlist_Song, Song
     
 def add_user_playlist_to_db(playlists):
     """Function to determine if playlist needs to be added to database"""

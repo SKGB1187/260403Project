@@ -46,10 +46,10 @@ In order to utilize this application from a clone the following things must be d
                 b.song_album,
                 e.spotify_artist_name
             from playlists a
-                join playlist_song_join c on (a.spotify_playlist_id = c.spotify_playlist_id)
-                join songs b on (c.spotify_song_id = b.spotify_song_id)
-                join artist_song_join d on (c.spotify_song_id = d.spotify_song_id)
-                join artists e on (d.spotify_artist_id = e.spotify_artist_id) 
+                left join playlist_song_join c on (a.spotify_playlist_id = c.spotify_playlist_id)
+                left join songs b on (c.spotify_song_id = b.spotify_song_id)
+                left join artist_song_join d on (c.spotify_song_id = d.spotify_song_id)
+                left join artists e on (d.spotify_artist_id = e.spotify_artist_id) 
 
         - Regrant permissions to database user using the following grant command
 

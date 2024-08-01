@@ -1,6 +1,6 @@
 from . import db
 
-from models import DBActionResult
+from .DBActionResult import DBActionResult
 
 class Song(db.Model):
     """User in the system."""
@@ -54,7 +54,7 @@ class Song(db.Model):
     def is_existing_song(cls, spotify_song_id):
         ret = False
         existing = Song.query.filter_by(spotify_song_id=spotify_song_id).first()
-        if not existing:
+        if existing:
             ret = True
 
         return ret

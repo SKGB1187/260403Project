@@ -1,6 +1,6 @@
 from . import db
 
-from models import DBActionResult
+from .DBActionResult import DBActionResult
 
 class Playlist_Song(db.Model):
     """User in the system."""
@@ -31,7 +31,7 @@ class Playlist_Song(db.Model):
     def add_playlist_song_entry(cls, spotify_playlist_id, spotify_song_id):
         """Add user playlists to database from Spotify API query"""
         ret: DBActionResult[Playlist_Song] = DBActionResult(None, False, "")
-        if not Playlist_Song.is_existing_playlist_song_combination():
+        if not Playlist_Song.is_existing_playlist_song_combination(spotify_playlist_id, spotify_song_id):
             try:
                 new_playlist_song = cls(
                     spotify_playlist_id=spotify_playlist_id,
@@ -54,10 +54,8 @@ class Playlist_Song(db.Model):
     @classmethod
     def is_existing_playlist_song_combination(cls, spotify_playlist_id, spotify_song_id):
         ret = False
-        existing = Playlist_Song.query.filter_by(spotify_playlist_id=spotify_playlist_id).first()
-        for spotify_song_id in existing:
-            if spotify_song_id == spotify_song_id:
-                ret = True
-                return ret
+        existing = Playlist_Song.query.filter_by(spotify_playlist_id=spotify_playlist_id, spotify_song_id = spotify_song_id).first()
+        if existing:
+            ret = True
                 
         return ret

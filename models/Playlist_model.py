@@ -2,7 +2,7 @@ from . import db
 
 from flask import g
 
-from DBActionResult import DBActionResult
+from .DBActionResult import DBActionResult
 
 class Playlist(db.Model):
     """User in the system."""
@@ -62,7 +62,7 @@ class Playlist(db.Model):
     def is_existing_playlist(cls, spotify_playlist_id):
         ret = False
         existing = Playlist.query.filter_by(spotify_playlist_id=spotify_playlist_id).first()
-        if not existing:
+        if existing:
             ret = True
 
         return ret

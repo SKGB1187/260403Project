@@ -6,7 +6,7 @@ from . import db
 from sqlalchemy.exc import IntegrityError
 
 from flask_bcrypt import Bcrypt
-from DBActionResult import DBActionResult
+from .DBActionResult import DBActionResult
 
 bcrypt = Bcrypt()
 
@@ -122,13 +122,14 @@ class User(db.Model):
         Add Spotify access token and refresh token information to the user
         so it can be accessed beyond the session.
         """
-
+        
         user = cls.query.get(user_id)
         if user:
             user.spotify_access_token = spotify_access_token
             user.spotify_access_token_set_time = spotify_access_token_set_time
             user.spotify_refresh_token = spotify_refresh_token
             
+            db.session.add(user)
             db.session.commit()
 
             return user
@@ -140,7 +141,7 @@ class User(db.Model):
         Add spotify Account Information to the User class
         """
         ret: DBActionResult[User] = DBActionResult(None, False, "")
-
+        
         try:
             user = cls.query.get(user_id)
             if user:
@@ -153,15 +154,21 @@ class User(db.Model):
                 ret.value = user
                 ret.is_success = True
                 ret.message = "Spotify profile pull successful!"
+               
+            else:
+                ret.message = "User not found"
 
-                return user
-            return None
+        except IntegrityError:
+            print("spotify account already linked to other user")
+            db.session.rollback()
+            ret.message = 'Sorry you can only link a Spotify account to one user account, please link a different Spotify Account'
+
         except Exception as e:
             print("other exception")
             print(str(e))
             db.session.rollback()
             ret.message = 'Sorry, an error occurred pulling Spotify profile, please try again.'
-
+        
         return ret
 
     @classmethod

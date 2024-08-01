@@ -3,7 +3,7 @@ import requests
 from flask import g
 from flask import flash, render_template
 
-from models import db
+from ..models import db
 
 def add_song_to_spotify_playlist(song_id, playlist_id):
     """Function to add a song to a Spotify playlist"""
@@ -50,7 +50,7 @@ def get_spotify_profile():
         bearer = g.user.spotify_access_token
         profile_request = requests.get("https://api.spotify.com/v1/me", headers={"Authorization": "Bearer " + bearer})
         response = profile_request.json()
-        
+
         return response
     
     except Exception as e:
@@ -97,7 +97,7 @@ def populate_user_playlists(playlist_id):
 
         if response.status_code == 200:
             tracks = response.json().get('items', [])
-            return tracks, playlist_id
+            return tracks
         else:
              flash('API call for tracks failed')
     except Exception as e:

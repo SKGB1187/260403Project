@@ -1,16 +1,16 @@
 from datetime import datetime, timedelta
 
-from flask import g
+from flask import g, session
 from flask import render_template
 
 from functools import wraps
 
-from routes_auth_spotify import run_refresh_token
+from ..utils import run_refresh_token, CURR_USER_KEY
 
 def login_required(f):
     @wraps(f)
     def ensure_login(*args, **kwargs):
-        if g.user is None:
+        if not g.user:
             return render_template('redirects/redirect_to_login.html')
         return f(*args, **kwargs)
     return ensure_login
@@ -18,7 +18,7 @@ def login_required(f):
 def spotify_link_required(f):
     @wraps(f)
     def ensure_spotify_link(*args, **kwargs):
-        if g.user.spotify_access_token is None:
+        if not g.user.spotify_access_token:
             return render_template('redirects/redirect_to_auth_link_spotify.html')
         return f(*args, **kwargs)
     return ensure_spotify_link

@@ -1,6 +1,6 @@
 from . import db
 
-from models import DBActionResult
+from .DBActionResult import DBActionResult
 
 class Artist(db.Model):
     """Artists user listens to."""

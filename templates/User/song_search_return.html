@@ -22,7 +22,7 @@
                 <td><strong>{{ track['name'] }}</strong></td>
                 <td>{{ track['artists'][0]['name'] }}</td>
                 <td>
-                    <form id="{{ track['id'] }}" action="{{ url_for('song_search') }}" method="post">
+                    <form id="{{ track['id'] }}" action="/song_search" method="post">
                         {{ form.csrf_token }}
                     </form>
 

@@ -8,8 +8,8 @@ from datetime import datetime
 from flask import g
 from flask import render_template
 
-from models import db
-from models import User
+from ..models import db
+from ..models import User
 
 auth_url = 'https://accounts.spotify.com/authorize'
 client_id = os.environ.get('spotify_client_id','d3bf0a271cf7472c90b736a912177481')
