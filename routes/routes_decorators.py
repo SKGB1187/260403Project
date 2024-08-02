@@ -23,6 +23,14 @@ def spotify_link_required(f):
         return f(*args, **kwargs)
     return ensure_spotify_link
 
+def spotify_allowlist_required(f):
+    @wraps(f)
+    def allowlist_required(*args, **kwargs):
+        if not g.user.spotify_user_id:
+            return render_template('redirects/redirect_to_auth_link_spotify.html')
+        return f(*args, **kwargs)
+    return allowlist_required
+
 def check_token_expiry(f):
     @wraps(f)
     def ensure_valid_token(*args, **kwargs):

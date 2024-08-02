@@ -5,7 +5,7 @@ from flask import flash, render_template
 from ..models import db
 from ..models import User, DBActionResult
 
-from .routes_decorators import check_token_expiry, login_required, spotify_link_required
+from .routes_decorators import check_token_expiry, login_required, spotify_link_required, spotify_allowlist_required
 
 from ..utils import CURR_USER_KEY
 from ..utils import get_spotify_profile
@@ -41,6 +41,7 @@ def inject_csrf_token():
 
 @profile.route('/update_profile')
 @login_required
+@spotify_allowlist_required
 @spotify_link_required
 @check_token_expiry
 def profile_view_change():

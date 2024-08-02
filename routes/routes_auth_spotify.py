@@ -4,7 +4,7 @@ from flask import Blueprint
 from flask import g, request, session, flash
 from flask import render_template, redirect  
 
-from ..models import User
+from ..models import User, DBActionResult
 
 from urllib.parse import urlencode
 
@@ -58,7 +58,17 @@ def callback():
             
             g.user = res
             
-            profile_data = get_spotify_profile()
+            profile_data_res = get_spotify_profile()
+
+            if not profile_data_res.is_success:
+                if g.user:
+                    g.pop("user")
+
+                session.clear()
+                flash(profile_data_res.message)
+                return render_template('index.html')
+
+            profile_data = profile_data_res.value
             linked_spotify_id = profile_data['id']
             user_spotify_id = User.query.filter(User.spotify_user_id == linked_spotify_id).first()
 

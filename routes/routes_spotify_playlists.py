@@ -7,7 +7,7 @@ from ..forms import CreatePlaylistForm
 from ..models import db
 from ..models import UserPlayListDisplay, User
 
-from .routes_decorators import check_token_expiry, login_required, spotify_link_required
+from .routes_decorators import check_token_expiry, login_required, spotify_link_required, spotify_allowlist_required
 
 from ..utils import CURR_USER_KEY
 from ..utils import add_user_tracks_to_db, create_spotify_playlist, get_user_playlists, add_user_playlist_to_db, populate_user_playlists
@@ -43,6 +43,7 @@ def inject_csrf_token():
 
 @playlists_spotify.route('/playlists', methods=['GET'])
 @login_required
+@spotify_allowlist_required
 @spotify_link_required
 @check_token_expiry
 def retrieve_playlists():
@@ -57,6 +58,7 @@ def retrieve_playlists():
 
 @playlists_spotify.route('/create_playlist', methods=['GET', 'POST'])
 @login_required
+@spotify_allowlist_required
 @spotify_link_required
 @check_token_expiry
 def create_new_spotify_playlist():
@@ -75,6 +77,7 @@ def create_new_spotify_playlist():
 
 @playlists_spotify.route("/playlist/<playlist_id>")
 @login_required
+@spotify_allowlist_required
 @spotify_link_required
 @check_token_expiry
 def view_specific_playlist(playlist_id):

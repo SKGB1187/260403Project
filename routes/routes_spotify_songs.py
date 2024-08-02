@@ -7,7 +7,7 @@ from ..forms import AddSongForm
 from ..models import db
 from ..models import User
 
-from .routes_decorators import check_token_expiry, login_required, spotify_link_required
+from .routes_decorators import check_token_expiry, login_required, spotify_link_required, spotify_allowlist_required
 
 from ..utils import CURR_USER_KEY
 from ..utils import add_song_to_spotify_playlist, add_user_playlist_to_db, add_user_tracks_to_db, get_spotify_song, get_user_playlists, populate_user_playlists
@@ -43,6 +43,7 @@ def inject_csrf_token():
 
 @songs_spotify.route('/song_search', methods=['GET', 'POST'])
 @login_required
+@spotify_allowlist_required
 @spotify_link_required
 @check_token_expiry
 def song_search():
@@ -74,6 +75,7 @@ def song_search():
 
 @songs_spotify.route('/add_to_playlist', methods=['POST'])
 @login_required
+@spotify_allowlist_required
 @spotify_link_required
 @check_token_expiry
 def add_to_playlist():

@@ -5,7 +5,24 @@ Many people use Spotify daily for listening to music to podcast to audiobooks. T
 
 ## Deployment Information
 
-This application has been deployed using Render.com and can be found at: https://playspotplay.onrender.com/
+This application has been deployed using Render.com and can be found at:  	[PlaySpotPlay](https://playspotplay.onrender.com/) 
+
+## Application Requires Users to be added to the applications allowlist
+
+Spotify as part of developing an application utilizing their API requires that application users outside of the application developer need to be added to an allowlist, I apologize for not reading this aspect of the documentation prior to submitting my capstone previously. As I do not know who will be testing this application and do not have their Spotify credentials to add to my allowlist, anyone from Hatchy who is testing will encounter 403 errors attempting to utilize the application (for more information on this please feel free to look at this portion of the Spotify Web API documentation: [Spotify Quota Modes](https://developer.spotify.com/documentation/web-api/concepts/quota-modes)). My appliication code has been updated to reflect this, by providing feedback to the user that they are not on the application's allowlist but I understand the difficulty this creates for testing and reviewing this application. 
+
+Before I submitted my application I did a walk through with my mentor, demonstrating the key aspects of the application and showing that it does indeed work (eventhough I am the only one who can access its full capabilities). Included in this submission is a screen capture that walks through the application. 
+
+[Watch the demonstration video](./PlaySpotPlay-ApplicationDemo.mp4)
+
+Or watch it below:
+
+<video width="600" controls>
+  <source src="./PlaySpotPlay-ApplicationDemo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+If you would like to test the full capabilities of the application for yourseld, please follow the instructions given in the *Setup for Application outside of Render Deployment* section below. This will walk you through creating your own application with Spotify in order to use this codebase and run the application utilizing your own credentials.
 
 ## Standard User Flow
 
@@ -31,7 +48,7 @@ In order to utilize this application from a clone the following things must be d
     - Once you have your Spotify client id, you will also need to set the redirect uri on the Spotify website for your application. This must be precise or the application will not work as expected. An example for this is http://localhost:5000/auth/redirect_to_playspotplay, where /auth/redirect_to_playspotplay is the route that has been established in this application.
     - Please Note: It is very important that your client id and your redirect uri are setup on the Spotify Web API website for this application to work. Failure to do so will result in the Oath 2.0 authorization failing and the application not working.
 - For the user_playlist_display.py model you will need to setup a view in your database to have it work properly and have your playlists display within the application.
-    - Note this is a view model for displaying the playlist information for a user, to get around the issues with SQLalchemy and to avoid many many calls to the database this was created and implemented. For a production server the following will need to be done on the database for proper application functionality.
+    - Note this is a view model for displaying the playlist information for a user, to get around the issues with SQLalchemy and to avoid many many calls to the database this was created and implemented. For a production server the following will need to be done on the database for proper application functionality. This does need to be run before you attempt to add a user to the application (if you do not run this first the user_playlist_display will be added as a table instead of a view and the view existing playlists portion of the application will not work).
 
         - Create View from Database using the following Query
         
@@ -58,7 +75,9 @@ In order to utilize this application from a clone the following things must be d
 
 ## Database Schema
 
-The database schema for this application is as follows: ![Database Schema](ERD.png)
+The database schema for this application is as follows: 
+
+![Database Schema](ERD.png)
 
 ## Project Background
 ### Capstone Project One:Overview
