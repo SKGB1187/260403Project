@@ -13,7 +13,7 @@ Spotify, as part of developing an application utilizing their API, requires that
 
 Before I submitted my application I did a walk through with my mentor, demonstrating the key aspects of the application and showing that it does indeed work (even though I am the only one who can access its full capabilities). Included in this submission is a screen capture that walks through the application. 
 
-[Watch the demonstration video](./PlaySpotPlay-ApplicationDemo.mp4)
+[Watch the demonstration video](./PlaySpotPlay-ApplicationDemo.mp4) - Note: you may need to download the video or clone the repository due to github's file size limitations.
 
 Or watch it below:
 
