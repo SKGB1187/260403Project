@@ -61,13 +61,12 @@ def get_spotify_profile() -> DBActionResult[dict]:
         if profile_request.status_code == 403:
             ret.message = 'Sorry you are not added to the application allowlist, required by Spotify to utilize their API. Please contact the developer to be added.'
             
-        else:
+        if profile_request.status_code == 200:
             response = profile_request.json()
 
-            if response.status_code == 200:
-                ret.value = response
-                ret.message = ""
-                ret.is_success = True
+            ret.value = response
+            ret.message = ""
+            ret.is_success = True
 
     except Exception as e:
         print("other exception")
