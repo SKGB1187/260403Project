@@ -14,8 +14,7 @@ def add_song_to_spotify_playlist(song_id, playlist_id):
         payload = {'uris': [f'spotify:track:{song_id}']}
         response = requests.post(add_to_playlist_url, headers={"Authorization": "Bearer " + bearer, "Content-Type": "application/json"}, json=payload)
     
-        if response.status_code == 200:
-            return response
+        return response
     
     except Exception as e:
         print("other exception")
