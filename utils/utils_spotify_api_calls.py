@@ -77,20 +77,22 @@ def get_spotify_profile() -> DBActionResult[dict]:
 
 def get_spotify_song(song_name):
     """Function to make API call for searched song"""
+    response = {}
     try:
         bearer = g.user.spotify_access_token
         song_search_url = f'https://api.spotify.com/v1/search?q={song_name}&type=track&include_external=audio'
         song_search = requests.get(song_search_url, headers={"Authorization": "Bearer " + bearer})
-        response = song_search.json()
-
-        if response.status_code == 200:
-            return response
+        
+        if song_search.status_code == 200:
+            response = song_search.json()
 
     except Exception as e:
             print("other exception")
             print(str(e))
             db.session.rollback()
             flash(str(e), 'danger')
+
+    return response
 
 
 def get_user_playlists():
